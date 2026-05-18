@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#534AB7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FiberCalc">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Fiber Laser Calculator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f7;--bg3:#ebebf0;
+  --text:#1a1a2e;--text2:#6b6b80;--text3:#9999aa;
+  --border:#e0e0e8;--border2:#ccccdd;
+  --purple:#534AB7;--purple2:#7F77DD;--purple3:#e8e7fc;
+  --green:#1D9E75;--green3:#e1f5ee;
+  --orange:#E67E22;--orange3:#fdf0e6;
+  --r:12px;--r2:8px;--r3:6px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;
+  --text:#f2f2f7;--text2:#aeaeb2;--text3:#6e6e73;
+  --border:#38383a;--border2:#48484a;
+  --purple3:rgba(83,74,183,0.2);--green3:rgba(29,158,117,0.15);--orange3:rgba(230,126,34,0.15);
+}}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.4;overflow-x:hidden;width:100%}
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:0.5px solid var(--border);padding:0;width:100%;overflow:hidden}
+.nav-title{text-align:center;padding:12px 16px 0;font-size:17px;font-weight:600;color:var(--text)}
+.nav-sub{text-align:center;font-size:12px;color:var(--text3);padding:2px 0 0}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;padding:8px 12px 0;gap:0;border-bottom:0.5px solid var(--border);margin-top:6px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:8px 14px;font-size:13px;font-weight:400;color:var(--text2);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;font-family:inherit;white-space:nowrap}
+.tab.active{color:var(--purple);border-bottom:2px solid var(--purple);font-weight:500}
+/* ── CONTENT ── */
+.content{padding:16px 14px;max-width:100%;width:100%;margin:0 auto;padding-bottom:40px;overflow-x:hidden}
+/* ── SECTIONS ── */
+.section{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.sec-hdr{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--border)}
+/* ── FIELDS ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--text2);font-weight:500}
+.inp-wrap{display:flex;align-items:center;gap:3px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r3);padding:2px 6px 2px 2px;transition:border-color .15s}
+.inp-wrap:focus-within{border-color:var(--purple)}
+.inp-wrap input{flex:1;border:none;background:transparent;font-size:14px;padding:7px 4px;text-align:right;color:var(--text);font-family:inherit;min-width:0;outline:none}
+.inp-wrap .u{font-size:11px;color:var(--text3);white-space:nowrap}
+input[type=number]::-webkit-inner-spin-button{opacity:0.4}
+/* ── OUTPUT ROWS ── */
+.orow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);gap:12px}
+.orow:last-child{border-bottom:none}
+.orow .lbl{font-size:13px;color:var(--text2);flex:1}
+.orow .val{font-size:14px;font-weight:600;text-align:right;white-space:nowrap}
+/* ── METRIC CARDS ── */
+.mcards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.mcard{background:var(--bg2);border-radius:var(--r2);padding:12px;text-align:center}
+.mcard .ml{font-size:11px;color:var(--text2);margin-bottom:4px}
+.mcard .mv{font-size:20px;font-weight:700}
+.mcard .mu{font-size:11px;color:var(--text3)}
+/* ── RESULT CARDS (3-col) ── */
+.rcards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.rcard{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r2);padding:10px 6px;text-align:center}
+.rcard .rl{font-size:10px;color:var(--text2);margin-bottom:3px;line-height:1.3}
+.rcard .rv{font-size:17px;font-weight:700}
+.rcard .ru{font-size:10px;color:var(--text3)}
+/* ── SUMMARY ── */
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+/* ── FIBER DUAL ── */
+.fiber-pair{display:grid;grid-template-columns:1fr 1fr;gap:0;width:100%;overflow:hidden}
+.fiber-col{padding:0 8px}
+.fiber-col:first-child{padding-left:0;border-right:0.5px solid var(--border);padding-right:12px}
+.fiber-col:last-child{padding-left:12px}
+.fiber-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* ── COMMON BAR ── */
+.common-bar{background:var(--bg2);border-radius:var(--r2);padding:10px;margin-bottom:12px}
+/* ── SPLICE QUALITY ── */
+.sq-card{background:var(--bg2);border-radius:var(--r2);padding:12px;text-align:center}
+.sq-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.sq-val{font-size:18px;font-weight:700}
+.sq-sub{font-size:11px;color:var(--text3)}
+/* ── BARS ── */
+.brow{display:flex;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);gap:8px;font-size:12px}
+.brow:last-child{border-bottom:none}
+.blbl{color:var(--text2);min-width:130px;font-size:11px}
+.bbar{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bfill{height:100%;border-radius:3px;transition:width .3s}
+.bval{min-width:60px;text-align:right;font-weight:500;font-size:12px}
+/* ── BEAM QUALITY ── */
+.bq-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.bq-row:last-child{border-bottom:none}
+.bq-lbl{font-size:13px;color:var(--text2);flex:1;min-width:0}
+.bq-inp{width:90px;flex-shrink:0}
+.bq-unit{font-size:12px;color:var(--text3);width:48px;text-align:right;flex-shrink:0}
+.calc-btn{padding:6px 10px;font-size:12px;font-family:inherit;cursor:pointer;border:0.5px solid var(--border2);border-radius:var(--r3);background:var(--bg2);color:var(--text);font-weight:500;flex-shrink:0;active:background:var(--bg3)}
+/* ── OMEGA CARD ── */
+.omega-card{background:var(--orange3);border:0.5px solid var(--orange);border-radius:var(--r2);padding:10px 12px;margin-bottom:10px}
+.omega-title{font-size:11px;color:var(--orange);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.omega-results{display:flex;gap:8px;margin-top:8px}
+.omega-res{background:var(--bg);border-radius:var(--r3);padding:8px;flex:1;text-align:center}
+.omega-rl{font-size:10px;color:var(--text3)}
+.omega-rv{font-size:15px;font-weight:700;color:var(--orange)}
+/* ── DERIVED BAR ── */
+.dbar{background:rgba(83,74,183,.08);border:0.5px solid rgba(83,74,183,.2);border-radius:var(--r2);padding:10px;margin-bottom:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.di .dl{font-size:10px;color:var(--text3)}
+.di .dv{font-size:12px;font-weight:600;color:var(--text)}
+/* ── COEFF ── */
+.coeff-box{background:var(--bg2);border-radius:var(--r2);padding:10px}
+.coeff-hdr{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.coeff-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.coeff-item{display:flex;flex-direction:column;gap:2px}
+.coeff-item .cl{font-size:10px;color:var(--text3)}
+.coeff-item .ciw{display:flex}
+.coeff-item input{flex:1;font-size:12px;padding:5px 6px;text-align:right;border:.5px solid var(--border);border-radius:var(--r3) 0 0 var(--r3);background:var(--bg);color:var(--text);min-width:0;border-right:none;font-family:inherit}
+.coeff-item input.mod{border-color:var(--orange)}
+.coeff-item .rrb{padding:0 6px;font-size:12px;cursor:pointer;border:.5px solid var(--border);border-radius:0 var(--r3) var(--r3) 0;background:var(--bg3);color:var(--text3);border-left:none;height:30px}
+.coeff-item .cd{font-size:9px;color:var(--text3)}
+/* ── TH CARD ── */
+.th-card{border-radius:var(--r);padding:12px;margin-bottom:10px;border:.5px solid}
+.th-title{font-size:14px;font-weight:600;margin-bottom:2px}
+.th-sub{font-size:11px;color:var(--text2);margin-bottom:10px}
+.formula-box{background:var(--bg);border:.5px solid var(--border);border-radius:var(--r2);padding:10px 12px;margin-top:8px;overflow-x:auto;font-size:13px;line-height:2}
+.ref-note{font-size:10px;color:var(--text3);margin-top:6px;font-style:italic;border-top:.5px solid var(--border);padding-top:6px}
+/* ── BADGE ── */
+.sm-badge{font-size:11px;padding:2px 7px;border-radius:20px;font-weight:600}
+.sm-yes{background:#e1f5ee;color:#0F6E56}
+.sm-no{background:#fff3e0;color:#b36200}
+@media(prefers-color-scheme:dark){.sm-yes{background:rgba(29,158,117,.2);color:#5DCAA5}.sm-no{background:rgba(230,126,34,.2);color:#EF9F27}}
+.rab{padding:4px 10px;font-size:11px;font-family:inherit;cursor:pointer;border:.5px solid var(--border2);border-radius:var(--r3);background:var(--bg);color:var(--text2)}
+.auto-tag{font-size:10px;background:rgba(83,74,183,.12);color:var(--purple);padding:1px 5px;border-radius:3px;font-weight:500;margin-left:4px}
+
+@media(max-width:360px){
+  .grid2{grid-template-columns:1fr}
+  .fiber-pair{grid-template-columns:1fr}
+  .fiber-col:first-child{border-right:none;padding-right:0;border-bottom:.5px solid var(--border);padding-bottom:12px;margin-bottom:12px}
+  .fiber-col:last-child{padding-left:0}
+  .rcards{grid-template-columns:1fr 1fr}
+  .mcards{grid-template-columns:1fr 1fr}
+  .summary{grid-template-columns:1fr}
+  .bq-lbl{font-size:12px}
+  .bq-inp{width:80px}
+}
+@media(max-width:480px){
+  .bq-row{grid-template-columns:1fr}
+  .dbar{grid-template-columns:repeat(2,1fr)}
+  .coeff-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-title">Fiber Laser Calculator</div>
+  <div class="nav-sub">Splice loss · Beam quality · Nonlinearity</div>
+  <div class="tabs" id="tabbar"></div>
+</div>
+
+<div class="content" id="content"></div>
+
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},startup:{ready(){MathJax.startup.defaultReady();}},options:{skipHtmlTags:['script','noscript','style','textarea','pre']}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<script>
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+const TABS=[{id:'fiber',label:'Fiber loss'},{id:'beam',label:'Beam quality'},{id:'nl',label:'Nonlinearity'}];
+const COEFFS=[
+  {id:'gR',   lbl:'g_R (m/W) Raman',      def:1e-13},
+  {id:'gB',   lbl:'g_B (m/W) Brillouin',  def:5e-11},
+  {id:'dnuB', lbl:'Δν_B (MHz) BW',        def:50},
+  {id:'vA',   lbl:'v_A (m/s) acoustic',   def:5960},
+  {id:'kth',  lbl:'κ_th (W/m·K)',         def:1.38},
+  {id:'dndT', lbl:'dn/dT (K⁻¹)',          def:1.1e-5},
+  {id:'rhocp',lbl:'ρ·cp (J/m³·K)',        def:1.636e6},
+  {id:'nsi',  lbl:'n silica',              def:1.45},
+];
+let activeTab='fiber';
+
+function fD(v){return Math.abs(v)>=1e-3&&Math.abs(v)<1e6?+v.toPrecision(3)+'':v.toExponential(2);}
+function gv(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function sv(id,v){const e=document.getElementById(id);if(e)e.value=v;}
+function st(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function fmt(v){if(!isFinite(v)||v<=0)return'∞';if(v>=1e6)return(v/1e6).toFixed(2)+' MW';if(v>=1e3)return(v/1e3).toFixed(1)+'k';return v.toFixed(0);}
+
+function inp(id,val,step,fn,unit){
+  return `<div class="inp-wrap"><input type="number" id="${id}" value="${val}" step="${step}" oninput="${fn}" inputmode="decimal"><span class="u">${unit}</span></div>`;
+}
+function fld(lbl,body){return `<div class="field"><label>${lbl}</label>${body}</div>`;}
+function orow(lbl,id,col){return `<div class="orow"><span class="lbl">${lbl}</span><span class="val" style="color:${col}" id="${id}">—</span></div>`;}
+function mcard(lbl,id,unit,col){return `<div class="mcard"><div class="ml">${lbl}</div><div class="mv" style="color:${col}" id="${id}">—</div><div class="mu">${unit}</div></div>`;}
+function rcard(lbl,id,unit,col){return `<div class="rcard"><div class="rl">${lbl}</div><div class="rv" style="color:${col}" id="${id}">—</div><div class="ru">${unit}</div></div>`;}
+function brow(lbl,bid,vid){return `<div class="brow"><span class="blbl">${lbl}</span><div class="bbar"><div class="bfill" id="${bid}" style="width:0%"></div></div><span class="bval" id="${vid}">—</span></div>`;}
+
+/* ── FIBER TAB ── */
+function fcol(n,c){
+  const col=c==='c1'?'#534AB7':'#1D9E75';
+  const ids=['f'+n+'-core','f'+n+'-clad','f'+n+'-na','f'+n+'-lam'];
+  const lbls=['Core 2a','Cladding 2b','NA','Wavelength'];
+  const vals=n==1?[8,125,0.12,1064]:[9,125,0.14,1064];
+  const steps=[0.1,1,0.01,1];
+  const units=['µm','µm','—','nm'];
+  return `<div class="fiber-col">
+    <div class="fiber-title"><span class="dot" style="background:${col}"></span>Fiber ${n}</div>
+    ${lbls.map((l,i)=>`<div style="margin-bottom:8px">${fld(l,inp(ids[i],vals[i],steps[i],'cF()',units[i]))}</div>`).join('')}
+  </div>`;}
+
+function focol(n,c){
+  const col=c==='c1'?'#534AB7':'#1D9E75';
+  const p='o'+n;
+  return `<div class="fiber-col">
+    <div class="fiber-title"><span class="dot" style="background:${col}"></span>Fiber ${n}</div>
+    ${orow('V-number',p+'-v',col)}
+    ${orow('MFD',p+'-mfd',col)}
+    ${orow('Aeff',p+'-aeff',col)}
+    ${orow('Cut-off λc',p+'-cut',col)}
+    ${orow('Modes',p+'-modes',col)}
+    <div class="orow"><span class="lbl">Single mode</span><span id="${p}-sm" class="sm-badge">—</span></div>
+    ${orow('Overlap Γ',p+'-ov',col)}
+    ${orow('Cladding Γ',p+'-cov',col)}
+  </div>`;}
+
+function renderFiber(){return `
+  <div class="section">
+    <div class="sec-hdr">Common parameters</div>
+    <div class="common-bar">
+      <div class="grid3">
+        ${fld('n₁ core',inp('n1',1.47,0.001,'cF()','—'))}
+        ${fld('Lateral offset',inp('lat',0.5,0.1,'cF()','µm'))}
+        ${fld('Angle',inp('ang',0.5,0.1,'cF()','°'))}
+      </div>
+    </div>
+    <div class="fiber-pair">${fcol(1,'c1')}${fcol(2,'c2')}</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hdr">Calculated parameters</div>
+    <div class="fiber-pair">${focol(1,'c1')}${focol(2,'c2')}</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hdr">Splice loss</div>
+    <div class="mcards">
+      ${mcard('Total splice loss','sl-db','dB','var(--text)')}
+      ${mcard('Transmission','sl-tr','%','var(--text)')}
+      ${mcard('Power loss','sl-lp','%','var(--text)')}
+      <div class="sq-card"><div class="sq-label">Quality</div><div class="sq-val" id="sl-q">—</div><div class="sq-sub" id="sl-qs">—</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500">Loss breakdown</div>
+    ${brow('Mode field mismatch','b-mfd','bl-mfd')}
+    ${brow('NA mismatch','b-na','bl-na')}
+    ${brow('Lateral offset','b-lat','bl-lat')}
+    ${brow('Angular misalignment','b-ang','bl-ang')}
+  </div>
+`;}
+
+/* ── BEAM TAB ── */
+function bqRow(lbl,id,val,step,unit,btnFn){
+  return `<div class="bq-row">
+    <span class="bq-lbl">${lbl}</span>
+    <div class="bq-inp">${inp(id,val,step,'cB()',unit)}</div>
+    ${btnFn?`<button class="calc-btn" onclick="${btnFn}">calc</button>`:'<span style="width:46px"></span>'}
+  </div>`;}
+
+function renderBeam(){return `
+  <div class="section">
+    <div class="sec-hdr">Input parameters</div>
+    ${bqRow('Center wavelength','bq-lam',1064,1,'nm','')}
+    ${bqRow('M² factor','bq-m2',1,0.01,'—','bM2()')}
+    ${bqRow('BPP','bq-bpp',0.3387,0.0001,'mm·mrad','bBPP()')}
+    ${bqRow('Beam waist w₀','bq-w0',1,0.001,'mm','bW0()')}
+    ${bqRow('Divergence θ','bq-div',0.3387,0.0001,'mrad','bDiv()')}
+    <div style="font-size:11px;color:var(--text3);padding:8px 0">BPP = w₀·θ &nbsp;|&nbsp; M² = BPP/BPP₀ &nbsp;|&nbsp; BPP₀ = λ/π</div>
+  </div>
+  <div class="section">
+    <div class="sec-hdr">Results</div>
+    <div class="mcards">
+      ${mcard('M² factor','bqo-m2','','#534AB7')}
+      ${mcard('BPP','bqo-bpp','mm·mrad','#534AB7')}
+      ${mcard('BPP₀ = λ/π','bqo-bpp0','mm·mrad','#534AB7')}
+      ${mcard('Beam waist w₀','bqo-w0','mm','#534AB7')}
+      ${mcard('Divergence θ','bqo-div','mrad','#534AB7')}
+      ${mcard('Rayleigh z_R','bqo-zr','mm','#534AB7')}
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0">
+      <span style="font-size:12px;color:var(--text2)">Diffraction limit proximity</span>
+      <div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div id="bq-bar" style="height:100%;border-radius:3px;background:#534AB7;width:100%"></div></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:4px"><span id="bq-badge" class="sm-badge">—</span></div>
+  </div>
+`;}
+
+/* ── NL TAB ── */
+function thCard(bg,border,title,sub,resHtml,fId){
+  return `<div class="th-card" style="background:${bg};border-color:${border}">
+    <div class="th-title" style="color:${border}">${title}</div>
+    <div class="th-sub">${sub}</div>
+    ${resHtml}
+    <div id="${fId}" class="formula-box"></div>
+  </div>`;}
+
+function renderNL(){
+  const cH=COEFFS.map(c=>`<div class="coeff-item">
+    <div class="cl">${c.lbl}</div>
+    <div class="ciw">
+      <input type="number" id="c-${c.id}" value="${c.def}" oninput="onMod('${c.id}',${c.def});cNL()" inputmode="decimal">
+      <button class="rrb" onclick="rOne('${c.id}',${c.def})">↺</button>
+    </div>
+    <div class="cd">${fD(c.def)}</div>
+  </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="sec-hdr">Fiber & laser parameters</div>
+    <div class="grid2">
+      ${fld('Core 2a (µm)',inp('nl-core',25,0.5,'cNL()','µm'))}
+      ${fld('Cladding D_cl (µm)',inp('nl-Dcl',400,10,'cNL()','µm'))}
+      ${fld('Length L (m)',inp('nl-L',5,0.1,'cNL()','m'))}
+      ${fld('NA',inp('nl-na',0.06,0.005,'cNL()','—'))}
+      ${fld('Laser λ_s (nm)',inp('nl-lams',1064,1,'cNL()','nm'))}
+      ${fld('Pump λ_p (nm)',inp('nl-lamp',976,1,'cNL()','nm'))}
+    </div>
+    <div class="grid2">
+      ${fld('η_QD <span class="auto-tag">auto</span>','<div class="inp-wrap"><input type="number" id="nl-etaQD" readonly style="opacity:.6;cursor:not-allowed"><span class="u">—</span></div>')}
+      ${fld('<span id="lbl-ap">Pump α_p (dB/m)</span>',inp('nl-alphap',1.5,0.1,'cNL()','dB/m'))}
+      ${fld('Signal α_s (dB/m)',inp('nl-alpha',0.003,0.001,'cNL()','dB/m'))}
+      ${fld('Bandwidth Δν (GHz)',inp('nl-bw',10,1,'cNL()','GHz'))}
+    </div>
+
+    <div class="omega-card">
+      <div class="omega-title">Thermoptic response F(Ω)</div>
+      <div class="grid2">
+        ${fld('Beat frequency Ω (Hz)',inp('nl-omega',500,50,'cNL()','Hz'))}
+        ${fld('D_th <span class="auto-tag">auto</span>','<div class="inp-wrap"><input type="number" id="nl-Dth" readonly style="opacity:.6;cursor:not-allowed"><span class="u">m²/s</span></div>')}
+      </div>
+      <div class="omega-results">
+        <div class="omega-res"><div class="omega-rl">Ω_c (Hz)</div><div class="omega-rv" id="o-Oc">—</div></div>
+        <div class="omega-res"><div class="omega-rl">F(Ω)</div><div class="omega-rv" id="o-FO">—</div></div>
+      </div>
+    </div>
+
+    <div class="dbar">
+      ${['η_QD:d-etaQD','Γ_p:d-Gp','Γ₀₁,₁₁:d-Gm','A_eff µm²:d-Aeff','L_eff,p:d-Lp','L_eff,s:d-Ls','w₀₁ µm:d-w01','w₁₁ µm:d-w11'].map(x=>{const[l,i]=x.split(':');return `<div class="di"><div class="dl">${l}</div><div class="dv" id="${i}">—</div></div>`;}).join('')}
+    </div>
+
+    <div class="coeff-box">
+      <div class="coeff-hdr">
+        <span>Material coefficients — silica</span>
+        <button class="rab" onclick="resetAll()">↺ Reset</button>
+      </div>
+      <div class="coeff-grid">${cH}</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    ${mcard('SRS threshold','sum-srs','W','#534AB7')}
+    ${mcard('SBS threshold','sum-sbs','W','#1D9E75')}
+    ${mcard('TMI threshold','sum-tmi','W','#E67E22')}
+  </div>
+
+  ${thCard('var(--purple3)','#534AB7','SRS — Stimulated Raman','Stokes shift ≈ 13.2 THz',
+    `<div class="rcards">${rcard('P_th Smith 1972','srs-s','W','#534AB7')}${rcard('P_th pol. corrected','srs-c','W','#534AB7')}${rcard('L_eff,s','srs-L','m','#534AB7')}</div>`,
+    'srs-f')}
+  ${thCard('var(--green3)','#1D9E75','SBS — Stimulated Brillouin','Stokes shift ≈ 11 GHz',
+    `<div class="rcards">${rcard('P_th narrowband','sbs-n','W','#1D9E75')}${rcard('P_th broadband','sbs-b','W','#1D9E75')}${rcard('ν_B','sbs-nu','GHz','#1D9E75')}</div>`,
+    'sbs-f')}
+  ${thCard('var(--orange3)','#E67E22','TMI — Transverse Mode Instability','LP01 ↔ LP11 thermal coupling',
+    `<div class="rcards">${rcard('P_th simple','tmi-s','W','#E67E22')}${rcard('P_th full model','tmi-f','W','#E67E22')}${rcard('Heat load Q','tmi-Q','W/m','#E67E22')}</div>`,
+    'tmi-f')}
+`;}
+
+/* ── ENGINE ── */
+function renderTabbar(){
+  document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button class="tab${t.id===activeTab?' active':''}" onclick="showTab('${t.id}')">${t.label}</button>`).join('');
+}
+
+function setFormulas(){
+  const nodes={
+    'srs-f':`\\[ P_{\\rm th}^{\\rm SRS}=\\frac{16\\,A_{\\rm eff}}{g_R\\,L_{\\rm eff,s}},\\quad L_{\\rm eff}=\\frac{1-e^{-\\alpha_s L}}{\\alpha_s} \\]<div class="ref-note">Smith (1972) · Stolen &amp; Ippen (1973) · Agrawal, Nonlinear Fiber Optics 6th ed.</div>`,
+    'sbs-f':`\\[ P_{\\rm th}^{\\rm SBS}=\\frac{21\\,A_{\\rm eff}}{g_B\\,L_{\\rm eff,s}}\\!\\left(1+\\frac{\\Delta\\nu_{\\rm sig}}{\\Delta\\nu_B}\\right),\\quad\\nu_B=\\frac{2nv_A}{\\lambda_s} \\]<div class="ref-note">Tkach et al. (1989) · Kobyakov et al. (2010)</div>`,
+    'tmi-f':`\\[ P_{\\rm th}^{\\rm TMI}=\\frac{2\\pi\\,\\kappa_{\\rm th}\\,\\lambda_s}{\\eta_{\\rm QD}\\cdot\\alpha_p\\cdot\\Gamma_p\\cdot(dn/dT)\\cdot\\Gamma_{01,11}\\cdot L_{\\rm eff,p}\\cdot F(\\Omega)} \\]\\[ F(\\Omega)=\\frac{1}{\\sqrt{1+(\\Omega/\\Omega_c)^2}},\\quad\\Omega_c=\\frac{D_{\\rm th}}{w_{\\rm eff}^2} \\]<div class="ref-note">Otto et al. Opt. Express 20 (2012) · Jauregui et al. Opt. Express 28 (2020)</div>`
+  };
+  const els=Object.entries(nodes).map(([id,html])=>{const el=document.getElementById(id);if(el)el.innerHTML=html;return el;}).filter(Boolean);
+  if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise(els).catch(()=>{});
+}
+
+function showTab(id){
+  activeTab=id;
+  renderTabbar();
+  const el=document.getElementById('content');
+  if(id==='fiber'){el.innerHTML=renderFiber();setTimeout(cF,0);}
+  else if(id==='beam'){el.innerHTML=renderBeam();setTimeout(cB,0);}
+  else{el.innerHTML=renderNL();setTimeout(()=>{cNL();setTimeout(setFormulas,200);},0);}
+}
+
+/* ── PHYSICS ── */
+function fCalc(core,clad,na,lam,n1){
+  const a=core/2,b=clad/2,l=lam*1e-9,V=(2*Math.PI*a*1e-6/l)*na,Vs=Math.max(V,0.1);
+  const w=a*(0.65+1.619/Math.pow(Vs,1.5)+2.879/Math.pow(Vs,6));
+  return{V,MFD:2*w,Aeff:Math.PI*w*w,cutoff:(2*Math.PI*a*1e-6*na/2.405)*1e9,
+    modes:Math.max(1,Math.round(V*V/2)),sm:V<2.405,
+    ov:(1-Math.exp(-2*(a/w)*(a/w)))*100,cov:(a/b)*(a/b)*100,w:w*1e-6,na};
+}
+function cF(){
+  const n1=gv('n1'),lat=gv('lat'),ang=gv('ang');
+  const f1=fCalc(gv('f1-core'),gv('f1-clad'),gv('f1-na'),gv('f1-lam'),n1);
+  const f2=fCalc(gv('f2-core'),gv('f2-clad'),gv('f2-na'),gv('f2-lam'),n1);
+  function setF(f,p){
+    st(p+'-v',f.V.toFixed(3));st(p+'-mfd',f.MFD.toFixed(2)+' µm');st(p+'-aeff',f.Aeff.toFixed(1)+' µm²');
+    st(p+'-cut',f.cutoff.toFixed(0)+' nm');st(p+'-modes',f.modes);st(p+'-ov',f.ov.toFixed(1)+'%');st(p+'-cov',f.cov.toFixed(3)+'%');
+    const b=document.getElementById(p+'-sm');
+    if(b){b.textContent=f.sm?'Yes ✓':'No';b.className='sm-badge '+(f.sm?'sm-yes':'sm-no');}
+  }
+  setF(f1,'o1');setF(f2,'o2');
+  const w1=f1.w,w2=f2.w;
+  const Tm=(2*w1*w2/(w1*w1+w2*w2))*(2*w1*w2/(w1*w1+w2*w2)),Lm=-10*Math.log10(Tm);
+  const Tn=f2.na<f1.na?(f2.na/f1.na)*(f2.na/f1.na):1,Ln=-10*Math.log10(Tn);
+  const d=lat*1e-6,weff=Math.sqrt((w1*w1+w2*w2)/2);
+  const Tl=Math.exp(-2*d*d/(w1*w1+w2*w2)),Ll=-10*Math.log10(Tl);
+  const th=ang*Math.PI/180,lm=gv('f1-lam')*1e-9;
+  const Ta=Math.exp(-(Math.PI*n1*weff*th/lm)*(Math.PI*n1*weff*th/lm)),La=-10*Math.log10(Ta);
+  const Tt=Tm*Tn*Tl*Ta,Lt=-10*Math.log10(Tt);
+  st('sl-db',Lt.toFixed(3));st('sl-tr',(Tt*100).toFixed(1));st('sl-lp',((1-Tt)*100).toFixed(2));
+  const qE=document.getElementById('sl-q'),qS=document.getElementById('sl-qs');
+  if(qE&&qS){
+    if(Lt<0.1){qE.textContent='Excellent';qE.style.color='#1D9E75';qS.textContent='< 0.1 dB';}
+    else if(Lt<0.3){qE.textContent='Good';qE.style.color='#1D9E75';qS.textContent='< 0.3 dB';}
+    else if(Lt<0.5){qE.textContent='Fair';qE.style.color='#E67E22';qS.textContent='< 0.5 dB';}
+    else{qE.textContent='Poor';qE.style.color='#c0392b';qS.textContent='> 0.5 dB';}
+  }
+  const mx=Math.max(Lm+Ln+Ll+La,0.001);
+  [['b-mfd','bl-mfd',Lm,'#534AB7'],['b-na','bl-na',Ln,'#7F77DD'],['b-lat','bl-lat',Ll,'#1D9E75'],['b-ang','bl-ang',La,'#0F6E56']].forEach(([bid,tid,v,col])=>{
+    const b=document.getElementById(bid);if(b){b.style.width=Math.min(100,v/mx*100).toFixed(1)+'%';b.style.background=col;}
+    st(tid,v.toFixed(3)+' dB');
+  });
+}
+function bpp0(l){return l*1e-9/Math.PI*1e6;}
+function cB(){
+  const lam=gv('bq-lam'),m2=gv('bq-m2'),bpp=gv('bq-bpp'),w0=gv('bq-w0'),dv=gv('bq-div');
+  const b0=bpp0(lam),zR=dv>0?(w0/dv)*1e3:0;
+  st('bqo-m2',m2.toFixed(3));st('bqo-bpp',bpp.toFixed(4));st('bqo-bpp0',b0.toFixed(4));
+  st('bqo-w0',w0.toFixed(3));st('bqo-div',dv.toFixed(4));st('bqo-zr',dv>0?zR.toFixed(1):'—');
+  const pct=Math.min(100,(1/Math.max(m2,1))*100);
+  const bar=document.getElementById('bq-bar');if(bar)bar.style.width=pct.toFixed(1)+'%';
+  const badge=document.getElementById('bq-badge');
+  if(badge){
+    if(m2<1.1){badge.textContent='Diffraction-limited';badge.className='sm-badge sm-yes';}
+    else if(m2<1.5){badge.textContent='Near diff.-limited';badge.className='sm-badge sm-yes';}
+    else if(m2<3){badge.textContent='Good quality';badge.className='sm-badge sm-no';}
+    else{badge.textContent='Poor quality';badge.className='sm-badge sm-no';badge.style.background='rgba(192,57,43,.15)';badge.style.color='#c0392b';}
+  }
+}
+function bM2(){sv('bq-m2',(gv('bq-bpp')/bpp0(gv('bq-lam'))).toFixed(4));cB();}
+function bBPP(){sv('bq-bpp',(gv('bq-m2')*bpp0(gv('bq-lam'))).toFixed(4));cB();}
+function bW0(){if(gv('bq-div')>0){sv('bq-w0',(gv('bq-bpp')/gv('bq-div')).toFixed(4));cB();}}
+function bDiv(){if(gv('bq-w0')>0){sv('bq-div',(gv('bq-bpp')/gv('bq-w0')).toFixed(4));cB();}}
+
+function fieldOverlap(w01,w11){
+  const N=500,rmax=6*Math.max(w01,w11),dr=rmax/N;
+  let cross=0,n01=0,n11=0;
+  for(let i=0;i<N;i++){
+    const r=(i+0.5)*dr,dA=2*Math.PI*r*dr;
+    const E01=Math.exp(-r*r/(w01*w01));
+    const E11=(r/w11)*Math.exp(-r*r/(w11*w11));
+    cross+=E01*E11*dA;n01+=E01*E01*dA;n11+=E11*E11*dA;
+  }
+  return cross/Math.sqrt(n01*n11);
+}
+function onMod(id,def){const e=document.getElementById('c-'+id);if(!e)return;e.classList.toggle('mod',Math.abs(parseFloat(e.value)-def)/(Math.abs(def)+1e-30)>0.001);}
+function rOne(id,def){const e=document.getElementById('c-'+id);if(e){e.value=def;e.classList.remove('mod');cNL();}}
+function resetAll(){COEFFS.forEach(c=>{const e=document.getElementById('c-'+c.id);if(e){e.value=c.def;e.classList.remove('mod');}});cNL();}
+
+function cNL(){
+  const core_um=gv('nl-core'),Dcl_um=gv('nl-Dcl'),L=gv('nl-L'),na=gv('nl-na');
+  const lams_nm=gv('nl-lams'),lamp_nm=gv('nl-lamp');
+  const alphap=gv('nl-alphap'),alphas=gv('nl-alpha'),bw=gv('nl-bw'),omega=gv('nl-omega');
+  const gR=gv('c-gR'),gB=gv('c-gB'),dnuB=gv('c-dnuB'),vA=gv('c-vA');
+  const kth=gv('c-kth'),dndT=gv('c-dndT'),rhocp=gv('c-rhocp'),nsi=gv('c-nsi');
+  const etaQD=Math.max(0.001,1-lamp_nm/lams_nm);
+  sv('nl-etaQD',etaQD.toFixed(5));
+  const lbl=document.getElementById('lbl-ap');if(lbl)lbl.textContent=`Pump α_p (${lamp_nm}nm) dB/m`;
+  const Dth=kth/rhocp;sv('nl-Dth',Dth.toExponential(2));
+  const lams=lams_nm*1e-9,a=core_um/2*1e-6,Dcl=Dcl_um*1e-6;
+  const V=(2*Math.PI*a/lams)*na,Vs=Math.max(V,0.1);
+  const w01=a*(0.65+1.619/Math.pow(Vs,1.5)+2.879/Math.pow(Vs,6));
+  const w11=a*(0.85+1.80/Math.pow(Vs,1.5)+3.20/Math.pow(Vs,6));
+  const Aeff=Math.PI*w01*w01,Gp=Math.pow(2*a/Dcl,2),Gm=fieldOverlap(w01,w11);
+  const weff=Math.sqrt(w01*w11);
+  const ln10=Math.log(10)/10,ap=alphap*ln10,as_=alphas*ln10;
+  const Lp=ap>1e-12?(1-Math.exp(-ap*L))/ap:L,Ls=as_>1e-12?(1-Math.exp(-as_*L))/as_:L;
+  const Oc=Dth/(weff*weff),FO=1/Math.sqrt(1+Math.pow(omega/Oc,2));
+  st('d-etaQD',etaQD.toFixed(4));st('d-Gp',(Gp*1e3).toFixed(2)+'e-3');st('d-Gm',Gm.toFixed(4));
+  st('d-Aeff',(Aeff*1e12).toFixed(1));st('d-Lp',Lp.toFixed(2));st('d-Ls',Ls.toFixed(2));
+  st('d-w01',(w01*1e6).toFixed(2));st('d-w11',(w11*1e6).toFixed(2));
+  st('o-Oc',Oc.toFixed(0));st('o-FO',FO.toFixed(4));
+  const Ps=16*Aeff/(gR*Ls),Pc=20*Aeff/(gR*Ls);
+  st('srs-s',fmt(Ps));st('srs-c',fmt(Pc));st('srs-L',Ls.toFixed(3));
+  const nuB=2*nsi*vA/lams*1e-9,Pn=21*Aeff/(gB*Ls),Pb=Pn*(1+bw/(dnuB*1e-3));
+  st('sbs-n',fmt(Pn));st('sbs-b',fmt(Pb));st('sbs-nu',nuB.toFixed(2));
+  let Psimp=Infinity,Pfull=Infinity;
+  if(etaQD>0&&Gp>1e-10&&ap>1e-10){
+    Psimp=2*Math.PI*kth*lams/(etaQD*ap*Gp*dndT*Lp);
+    if(Gm>1e-6&&FO>1e-6) Pfull=2*Math.PI*kth*lams/(etaQD*ap*Gp*dndT*Gm*Lp*FO);
+  }
+  const Q=isFinite(Pfull)?etaQD*ap*Gp*Pfull:Infinity;
+  st('tmi-s',fmt(Psimp));st('tmi-f',fmt(Pfull));st('tmi-Q',isFinite(Q)?Q.toFixed(3):'∞');
+  st('sum-srs',fmt(Pc));st('sum-sbs',fmt(Pb));st('sum-tmi',fmt(Pfull));
+}
+
+renderTabbar();
+showTab('fiber');
+</script>
+</body>
+</html>
